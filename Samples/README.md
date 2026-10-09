@@ -2,7 +2,7 @@
 This directory contains the raw phishing email samples analyzed in this project. 
 
 **Safe Handling Notice:** 
-To prevent accidental execution on host machines, all raw `.eml` files have been compressed into a password-protected archive (`phishing_eml_samples.zip`). Please conduct all analysis within a safely isolated sandbox or dedicated virtual machine.
+This archive contains live phishing links and malicious attachments. To prevent accidental execution on host machines, all raw `.eml` files have been compressed into a password-protected archive (`phishing_eml_samples.zip`). Please conduct all analysis within a safely isolated sandbox or dedicated virtual machine.
 * **Password:** `infected`
 
 ## Dataset Attribution
