@@ -12,7 +12,7 @@ Automated header analysis was conducted to establish the origin and authenticity
 * **Spoofing Detected:** The email claimed to originate from `moss.it`, but authentication checks resulted in a hard SPF failure.
 * **Originating IP:** `213[.]227[.]154[.]65` (LeaseWeb Netherlands B.V., AS 60781). This suggests the use of a compromised hosting server or open relay to bypass static IP blacklists.
 
-![Email Authentication Analysis](../images/P01-IOC-1.png)
+![Email Authentication Analysis](../../images/P01-IOC-1.png)
 *Figure 1: Custom Python script output detailing SPF failure and spoofed domain.*
 
 The script successfully parsed the MIME boundaries and isolated the attached container without detonating the payload.
