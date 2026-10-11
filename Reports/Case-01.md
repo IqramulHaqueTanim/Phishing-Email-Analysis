@@ -1,4 +1,4 @@
-# Incident Report: Phishing & Andromeda Trojan Analysis (IR-2020-001)
+# Incident Report: Phishing & Andromeda Trojan Analysis
 
 ## Executive Summary
 This report details the technical analysis of a malicious email masquerading as a wire transfer document. Initial automated triage using a custom Python script identified spoofed sender infrastructure and a suspicious `.iso` container. Manual forensic extraction via CyberChef bypassed the email's evasion layers, revealing an embedded PE32 executable. Threat intelligence validation confirmed the payload as a variant of the Andromeda (Androm/Ejzz) Trojan. 
@@ -12,12 +12,12 @@ Automated header analysis was conducted to establish the origin and authenticity
 * **Spoofing Detected:** The email claimed to originate from `moss.it`, but authentication checks resulted in a hard SPF failure.
 * **Originating IP:** `213[.]227[.]154[.]65` (LeaseWeb Netherlands B.V., AS 60781). This suggests the use of a compromised hosting server or open relay to bypass static IP blacklists.
 
-![Email Authentication Analysis](../../images/P01-IOC-1.png)
+![Email Authentication Analysis](../Images/P01-IOC-1.png)
 *Figure 1: Custom Python script output detailing SPF failure and spoofed domain.*
 
 The script successfully parsed the MIME boundaries and isolated the attached container without detonating the payload.
 
-![Attachment Parsing](../images/P01-IOC-2.png)
+![Attachment Parsing](../Images/P01-IOC-2.png)
 *Figure 2: Script output fingerprinting the malicious quotation.iso attachment.*
 
 ---
@@ -29,7 +29,7 @@ The attachment was delivered as an ISO 9660 disk image (`quotation.iso`). Attack
 * **Container Hash (SHA-256):** `75fdb848eac332b4ca7d88f497e7ba7ebbb9a798d825b28cf1f87b9d7149e87f`
 * **Threat Intelligence:** A scan of the container hash returned a 40/61 detection rate, confirming the outer layer as malicious.
 
-![VirusTotal ISO Scan](../images/P01-IOC-3.png)
+![VirusTotal ISO Scan](../Images/P01-IOC-3.png)
 *Figure 3: VirusTotal detection confirming the .iso container is weaponized.*
 
 ---
@@ -40,7 +40,7 @@ To safely isolate the true payload, manual deobfuscation was performed using Cyb
 
 A targeted recipe (`From Base64` -> `Extract Files`) was applied to decode the text, virtually mount the ISO, and filter out decoy files (such as `.mp3` and `.bmp` artifacts), leaving only the primary executable.
 
-![CyberChef Extraction](../images/P01-IOC-4.png)
+![CyberChef Extraction](../Images/P01-IOC-4.png)
 *Figure 4: CyberChef file carving isolating the embedded executable.*
 
 ---
@@ -55,7 +55,7 @@ The extracted binary (`extracted_at_0xf000.exe`) was analyzed to determine its c
 * **Compiler:** Microsoft Visual Basic v5.0/v6.0
 * **Compilation Timestamp:** `2004-12-23 21:25:56 UTC`. *Note: This legacy timestamp indicates either deliberate timestomping to evade heuristic detection or the use of an outdated malware builder.*
 
-![VirusTotal Payload Scan](../images/P01-IOC-5.png)
+![VirusTotal Payload Scan](../Images/P01-IOC-5.png)
 *Figure 5: VirusTotal scan of the extracted binary confirming the Andromeda Trojan.*
 
 ---
