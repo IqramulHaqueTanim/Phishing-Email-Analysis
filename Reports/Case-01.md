@@ -75,8 +75,11 @@ The extracted binary (`extracted_at_0xf000.exe`) was analyzed to determine its c
 
 ## 6. MITRE ATT&CK Mapping
 
-Based on behavioral sandbox execution, the payload exhibits the following tactics:
-* **T1055 (Process Injection):** Executes process hollowing to inject malicious code into legitimate Windows processes.
-* **T1497 (Virtualization/Sandbox Evasion):** Utilizes sleep loops and debug environment checks to avoid detonating inside analysis sandboxes.
+Based on combined behavioral execution data from VirusTotal and ANY.RUN sandboxes, the payload exhibits the following tactics:
+
+* **T1047 (Windows Management Instrumentation):** Leverages WMI to execute commands and gather system data.
+* **T1082 (System Information Discovery) & T1124 (System Time Discovery):** Actively queries hardware configurations, system time, and registry keys to profile the victim machine.
+* **T1497 (Virtualization/Sandbox Evasion):** Utilizes environment checks (time and registry queries) to detect analysis sandboxes. If detected, execution halts to conceal primary payload behaviors.
+* **T1055 (Process Injection):** When executed in a vulnerable environment, it performs process hollowing to inject malicious code into legitimate Windows processes.
 * **T1143 (Hidden Window):** Executes with a hidden window to remain invisible to the end-user.
-* **T1082 (System Information Discovery):** Conducts WMI queries to map the victim system architecture.
+* **T1204.002 (User Execution: Malicious File):** Relies on the user to manually extract and execute the payload from the delivered ISO container.
