@@ -23,7 +23,7 @@ The message contains no file attachments. Instead, it deploys a dual-stage exter
 
 Initial automated extraction via `phishing_analyzer.py` parsed key envelope attributes and authentication headers:
 
-![P02 Core Headers & DKIM Analysis](../Images/P02-IOC-1.jpg)
+![P02 Core Headers & DKIM Analysis](../Images/P02-IOC-1.png)
 
 ### Core Header Identification
 * **Sender Display Name:** `"Netflix.com"`
@@ -47,7 +47,7 @@ Initial automated extraction via `phishing_analyzer.py` parsed key envelope attr
 
 Automated extraction identified multiple HTTP endpoints and bare IP indicators with no attached files:
 
-![P02 Extracted Links & Body Preview](../Images/P02-IOC-2.jpg)
+![P02 Extracted Links & Body Preview](../Images/P02-IOC-2.png)
 
 ### Extracted Indicators
 * `hxxp://104[.]219[.]248[.]205/track/3YEGmL5971yPEb18pdqamxrtzy308AJPPZQUNERGTEMV707QLOB2482265a12`
@@ -62,7 +62,7 @@ Automated extraction identified multiple HTTP endpoints and bare IP indicators w
 
 Because basic URI scraping does not establish behavioral context, manual source analysis was performed directly on the raw email body in a text editor:
 
-![P02 HTML Source Inspection](../Images/P02-IOC-3.jpg)
+![P02 HTML Source Inspection](../Images/P02-IOC-3.png)
 
 ### Telemetry / Reconnaissance Beacon (Upper Panel)
 Lines 283–284 embed two `img` tags pointing to `104.219.248.205`:
