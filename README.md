@@ -42,11 +42,11 @@ The raw `.eml` artifacts analyzed in this portfolio were sourced from a sanitize
 
 ## Key SOC Skills Demonstrated
 
-* **Static File & Attachment Triage (Case 01):** Extracted and categorized suspicious file types (such as `.iso` container images) designed to bypass MOTW (Mark-of-the-Web) protections and deliver second-stage executables.
-* **Email Authentication & Protocol Forensics (Cases 01–05):** Evaluated cryptographic headers including SPF host validity, DKIM signature verification, DMARC alignment (`p=reject`/`quarantine`), and `Return-Path` mismatches.
-* **Multi-Hop Routing Analysis (Cases 02 & 05):** Traversed full `Received:` chains chronologically to separate untrusted client injection points from legitimate mail relay hops, identifying spoofed originating IPs.
-* **Cloud Infrastructure Abuse Analysis (Case 03):** Documented modern evasion tactics where adversaries utilize trusted vendors (Amazon SES, AWS S3) to bypass reputation-based web gateways and automated AV scoring.
-* **On-Chain Financial Tracking (Case 04):** Pivoted from non-link social engineering lures into public blockchain ledgers (Bitcoin), evaluating address transaction histories, aggregate volumes, and fund washing patterns.
-* **Filter Evasion & Obfuscation Decoding (Case 05):** Identified MIME multipart manipulation and Bayesian poisoning (hash busting) designed to evade content-inspection engines, while extracting embedded redirects.
-* **Tool Diversity & Workflow Adaptation:** Leveraged automated Python parsing scripts for fast terminal extraction, pivoted to PhishTool for unified visual header/body triage, and integrated external threat platforms (VirusTotal, URLScan.io) for live infrastructure verdicts.
-* **Incident Documentation & MITRE ATT&CK Mapping:** Formatted technical IOC tables, defined actionable perimeter blocking rules, and mapped adversary actions across ATT&CK techniques (Initial Access, Defense Evasion, Reconnaissance, Resource Development).
+* **Malicious Attachment Triage (Case 01):** Extracted and analyzed high-risk file attachments (like ISO disk images) used to bypass basic email filters and drop malware onto endpoints.
+* **Email Authentication Checks (Cases 01–05):** Verified SPF, DKIM, and DMARC results to catch spoofing, header tampering, and unauthorized sending servers.
+* **Header & Routing Analysis (Cases 01–05):** Traced the email path through the `Received:` headers to find the real origin IP address rather than trusting the display name or `From:` field.
+* **Investigating Cloud Abuse (Case 03):** Analyzed how attackers abuse trusted platforms like Amazon SES and AWS S3 to pass email security filters and host phishing pages on legitimate infrastructure.
+* **Blockchain Ledger Pivoting (Case 04):** Investigated extortion emails with no links by searching the attacker's Bitcoin wallet on a blockchain explorer, confirming transaction volume and payment activity.
+* **Detecting Filter Evasion (Case 05):** Identified "hash busting" (randomized hidden text) used by spammers to confuse automated spam filters and alter email file hashes.
+* **Threat Intelligence & SOC Tooling:** Combined automated Python scripts with enterprise platforms like PhishTool, URLScan.io, and VirusTotal to confirm malicious verdicts and verify infrastructure takedowns.
+* **Actionable Reporting & Defense:** Mapped threats to the MITRE ATT&CK framework and documented clear remediation steps (firewall blocks, DMARC policies, and user awareness training).
