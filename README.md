@@ -3,9 +3,36 @@
 ## Project Objective
 This repository serves as a practical demonstration of Security Operations Center (SOC) triage, email header forensics, and threat intelligence pivoting. The portfolio spans five distinct attack profiles analyzed from raw `.eml` artifacts to full incident reports, illustrating the diagnostic workflows required to detect, analyze, and document modern email-borne attacks.
 
+---
+
+## Repository Structure
+
+```text
+Phishing-Email-Analysis/
+├── Automation/
+│   ├── README.md                  # Script usage and parsing workflow
+│   └── phishing_analyzer.py       # Custom Python script for header/MIME parsing
+├── CyberChef-Recipes/
+│   ├── Base64_Archive_Extractor.json # CyberChef recipe for payload decoding
+│   └── README.md                  # Recipe instructions and decoder steps
+├── Images/                        # Extracted indicators and OSINT screenshots
+├── Reports/
+│   ├── Case-01.md                 # Incident report for Phish-01 (Malware dropper)
+│   ├── Case-02.md                 # Incident report for Phish-02 (Netflix impersonation)
+│   ├── Case-03.md                 # Incident report for Phish-03 (Binance / AWS Abuse)
+│   ├── Case-04.md                 # Incident report for Phish-04 (Sextortion & Crypto)
+│   └── Case-05.md                 # Incident report for Phish-05 (CAA Impersonation & Hash Busting)
+├── Samples/
+│   ├── README.md                  # Safe handling warning & archive password note
+│   └── phishing_eml_samples.zip   # Password-protected archive containing raw artifacts (Phish-01 to 05)
+└── README.md                      # Project overview and workflow methodology
+```
+
+---
+
 ## Tools & Technologies Used
-* **Automation & Scripting:** Python 3 (`phishing_analyzer.py`), Linux CLI
-* **Platform Triage:** PhishTool
+* **Automation & Scripting:** Python 3, Linux CLI
+* **Platform Triage:** PhishTool, AnyRun
 * **Threat Intelligence & OSINT:** VirusTotal, URLScan.io
 * **Blockchain Forensics:** Blockchain.com Explorer
 
@@ -41,7 +68,6 @@ The raw `.eml` artifacts analyzed in this portfolio were sourced from a sanitize
 ---
 
 ## Key SOC Skills Demonstrated
-
 * **Malicious Attachment Triage (Case 01):** Extracted and analyzed high-risk file attachments (like ISO disk images) used to bypass basic email filters and drop malware onto endpoints.
 * **Email Authentication Checks (Cases 01–05):** Verified SPF, DKIM, and DMARC results to catch spoofing, header tampering, and unauthorized sending servers.
 * **Header & Routing Analysis (Cases 01–05):** Traced the email path through the `Received:` headers to find the real origin IP address rather than trusting the display name or `From:` field.
