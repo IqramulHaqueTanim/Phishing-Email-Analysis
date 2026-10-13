@@ -83,4 +83,27 @@ A search of the wallet address (`bc1q5f7aq5svwktsmy5ssvw5e0ju2e0pj5zpeaxsln`) on
 | **Initial Access** | **T1566.001** | Phishing: Spearphishing Attachment/Link | Uses fear-based email lures to extort the victim, though relying on text rather than links. |
 | **Defense Evasion** | **T1036.005** | Masquerading: Match Legitimate Name | Self-spoofs the victim's own email address to feign account compromise. |
 | **Reconnaissance** | **T1598.002** | Phishing for Information: Spearphishing Link | Leverages breached credentials ("Credential Stuffing") gathered from earlier external data leaks. |
-| **Impact**
+| **Impact** | **T1657** | Financial Theft | Extorts funds via cryptocurrency using social engineering. |
+
+---
+
+## 7. Indicators of Compromise (IOCs)
+
+| Type | Indicator | Role in Attack |
+| :--- | :--- | :--- |
+| **Cryptocurrency** | `bc1q5f7aq5svwktsmy5ssvw5e0ju2e0pj5zpeaxsln` | Attacker Bitcoin Extortion Wallet |
+| **Credential** | `Aurora20!!!` | Known-compromised password (must be rotated) |
+| **IPv4** | `1.1.1.1` | Spoofed Sender IP (Cloudflare) |
+
+---
+
+## 8. Remediation & SOC Recommendations
+
+### Account Security
+1. **Immediate Password Rotation:** The user must immediately change the password `Aurora20!!!` on all accounts where it was ever used, as it is actively circulating in attacker breach lists.
+2. **Enable MFA:** Enforce Multi-Factor Authentication (MFA) on the user's primary email and corporate accounts to render stolen passwords useless.
+
+### Perimeter Defense
+1. **Anti-Spoofing Rules:** Enforce strict DMARC policies (`p=reject` or `p=quarantine`) and configure the email gateway to block incoming external emails that spoof internal corporate domains.
+2. **Keyword Filtering:** Implement mail gateway rules to quarantine emails containing cryptocurrency wallet formats (regex for BTC wallets) combined with extortion keywords (e.g., "Trojan", "Record", "Bitcoin").
+3. **User Awareness:** Instruct the user not to engage with the attacker or pay the ransom, as the claims of device infection are fabricated.
