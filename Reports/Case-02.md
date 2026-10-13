@@ -5,47 +5,47 @@
 | Parameter | Value |
 | :--- | :--- |
 | **Analysis Date** | October 13, 2026 |
-| **Threat Classification** | Credential Harvesting / Brand Impersonation / Defense Evasion |
-| **Delivery Vector** | Email-borne Web Links (Bare IP Delivery) |
+| **Threat Type** | Credential Harvesting / Brand Impersonation |
+| **Delivery Method** | Email Web Links (Bare IP Addresses) |
 | **Target Brand** | Netflix |
-| **Primary Payload** | Ephemeral Phishing Infrastructure (`http://203.161.42.223/t/...`) |
-| **Telemetry / Tracking** | 1x1 Transparent Web Beacon (`http://104.219.248.205/track/...`) |
+| **Main Phishing Link** | Short-lived Phishing Server (`http://203.161.42.223/t/...`) |
+| **Tracking Method** | 1x1 Hidden Tracking Pixel (`http://104.219.248.205/track/...`) |
 | **Verdict** | **Confirmed Malicious** |
 
 ### Incident Overview
-A targeted phishing email was identified impersonating Netflix billing support with the subject line `"RESTART YOUR MEMBERSHIP"`. The lure attempts to induce urgency by claiming account suspension due to payment processing failures. Technical header triage revealed display name spoofing combined with the abuse of a compromised third-party Microsoft 365 tenant (`whitepineacademy.onmicrosoft.com`) to bypass upstream email security controls.
+We identified a targeted phishing email pretending to be Netflix billing support with the subject line `"RESTART YOUR MEMBERSHIP"`. The email tries to create a sense of urgency by telling the user their account will be suspended because of a payment issue. By checking the headers, we saw the attacker spoofed the display name and sent the email through a hacked Microsoft 365 account (`whitepineacademy.onmicrosoft.com`) to get past spam filters.
 
-The message contains no file attachments. Instead, it deploys a dual-stage external infrastructure model: an embedded 1x1 reconnaissance web beacon for read validation and multiple bare IPv4 action links directing users to a hosted credential harvesting page. While the target infrastructure was unresponsive during dynamic scanning (indicative of short-lived or evasive hosting), header misalignment and underlying source-code structure definitively confirm malicious intent.
+The email does not have any file attachments. Instead, it uses web links. It contains a hidden 1x1 tracking image to check if the user opened the email, and several IP-based links that go to a fake Netflix login page. When we tested the links later, the server was already offline, which is common for quick phishing attacks. However, looking at the code and headers proves this is a malicious email.
 
 ---
 
 ## 2. Email Header & Authentication Analysis
 
-Initial automated extraction via `phishing_analyzer.py` parsed key envelope attributes and authentication headers:
+Initial extraction using the `phishing_analyzer.py` script showed the main email details and authentication headers:
 
 ![P02 Core Headers & DKIM Analysis](../Images/P02-IOC-1.png)
 
 ### Core Header Identification
 * **Sender Display Name:** `"Netflix.com"`
-* **Envelope Sender (`From:`):** `Booth_Callie_37359@white1.almonkidsobhanah.shop`
+* **Actual Sender (`From:`):** `Booth_Callie_37359@white1.almonkidsobhanah.shop`
 * **Return-Path:** `Booth_Callie_37359@white1.almonkidsobhanah.shop`
-* **Originating / Relaying IP (`X-Sender-IP`):** `52.100.172.200` (Microsoft Outbound Protection Relay)
+* **Sending IP (`X-Sender-IP`):** `52.100.172.200` (Microsoft Outbound Mail Server)
 * **Date Sent:** Sun, 15 Sep 2024 16:54:22 +0000
 
-### Authentication Results & Tenant Abuse
-* **SPF Check:** `pass` (`white1.almonkidsobhanah.shop` designates `52.100.172.200` as a permitted sender).
-* **DKIM Check:** `fail` (Signature did not verify against header domain).
+### Authentication Results
+* **SPF Check:** `pass` (The sender domain allows the Microsoft IP to send emails on its behalf).
+* **DKIM Check:** `fail` (The digital signature does not match the sender domain).
   * **Signing Domain (`d=`):** `whitepineacademy.onmicrosoft.com`
-  * **DKIM Alignment:** **Unaligned**. The cryptographic signature originates from an educational Microsoft 365 tenant rather than the envelope domain (`white1.almonkidsobhanah.shop`) or Netflix.
-* **DMARC Check:** `bestguesspass` / `action=none` (Recipient MTA did not reject due to permissive DMARC policies on the sender domain).
+  * **DKIM Alignment:** **Unaligned**. The signature comes from an educational Microsoft 365 account instead of the actual sender domain or Netflix.
+* **DMARC Check:** `bestguesspass` (The receiving server did not block it because the sender domain has weak DMARC rules).
 
-**Analyst Assessment:** The threat actor routed outbound traffic through a hijacked Microsoft 365 institutional tenant (`whitepineacademy.onmicrosoft.com`). By routing through legitimate Microsoft infrastructure, the email attained an SPF `pass` to facilitate inbox delivery and bypass basic spam filters.
+**Analyst Note:** The attacker sent the email through a compromised Microsoft 365 school account. Using a trusted Microsoft server helped the email pass SPF checks and land in the user's inbox instead of the spam folder.
 
 ---
 
 ## 3. Email Body & Link Triage
 
-Automated extraction identified multiple HTTP endpoints and bare IP indicators with no attached files:
+The automated script found several web links and IP addresses, but no attachments:
 
 ![P02 Extracted Links & Body Preview](../Images/P02-IOC-2.png)
 
@@ -54,57 +54,51 @@ Automated extraction identified multiple HTTP endpoints and bare IP indicators w
 * `hxxp://203[.]161[.]42[.]223/t/4Dwvmi5971OWjr18keqgwfrrcb308MUKDNQMFKXKMNSK707PBZY2482265K12`
 * `hxxp://203[.]161[.]42[.]223/t/4HMIzG5971qhJM18qjuwhistof308SHGEYDNCLBGNETS707WWHY2482265F12`
 * `hxxp://203[.]161[.]42[.]223/t/5tAAWI5971Zugu18amjrfhzeux308DLRSRNWKQQFIYOP707ZGEL2482265v12`
-* `hxxp://www[.]w3[.]org/TR/REC-html40/loose[.]dtd` *(Excluded: Benign W3C DTD schema reference)*
+* `hxxp://www[.]w3[.]org/TR/REC-html40/loose[.]dtd` *(Note: This is just a standard HTML format link and is perfectly safe)*
 
 ---
 
-## 4. Deep Source Inspection: Tracking vs. Payload Differentiation
+## 4. Source Code Inspection: Tracking vs. Main Link
 
-Because basic URI scraping does not establish behavioral context, manual source analysis was performed directly on the raw email body in a text editor:
+Since the script just lists all links, I manually checked the raw HTML code in a text editor to see what each link actually does:
 
 ![P02 HTML Source Inspection](../Images/P02-IOC-3.png)
 
-### Telemetry / Reconnaissance Beacon (Upper Panel)
-Lines 283–284 embed two `img` tags pointing to `104.219.248.205`:
-* **Tag Implementation:** `<img src="http://104.219.248.205/track/3YEGmL59..." width="1" height="1">`
-* **Purpose:** Transparent 1x1 image tracking pixel (web beacon).
-* **Mechanism:** When the victim's client renders HTML images, an automated GET request logs recipient verification, client IP, timestamp, and User-Agent telemetry back to the attacker.
+### Tracking Pixel (Top Image)
+Lines 283–284 show two `img` tags pointing to `104.219.248.205`. 
+* **Purpose:** These are hidden 1x1 images. When the email opens, this link loads silently and tells the attacker that the email address is active, along with the user's IP address and device info.
 
-### Primary Credential Lure (Lower Panel)
-Lines 343–347 wrap the call-to-action button (`UPDATE ACCOUNT NOW`) around `203.161.42.223`:
-* **Tag Implementation:** `<a href="http://203.161.42.223/t/4Dwvmi59..."><span>UPDATE ACCOUNT NOW</span></a>`
-* **Purpose:** Interactive credential harvesting portal.
-* **Mechanism:** Directs victims to an external web form designed to capture Netflix credentials and payment details. Source review confirmed all interactive elements (including the logo and unsubscribe prompt) point to tracking routes on this same host.
+### Main Phishing Link (Bottom Image)
+Lines 343–347 show the `UPDATE ACCOUNT NOW` button pointing to `203.161.42.223`. 
+* **Purpose:** This is the actual phishing link where the user is supposed to enter their Netflix password and credit card details. Checking the rest of the code showed that clicking the Netflix logo or the "unsubscribe" button also takes the user to this exact same IP.
 
 ---
 
-## 5. Threat Intelligence & Infrastructure Pivoting
+## 5. Threat Intelligence & Infrastructure Checks
 
-Dynamic triage and multi-engine reputation checks were performed against the destination hosting infrastructure.
+I used online tools to check if the destination servers were known for malicious activity.
 
-### URLScan.io Detonation
-Submission of the primary lure URL (`http://203.161.42.223/t/4Dwvmi...`) to URLScan.io resulted in an unreachable host status:
+### URLScan.io Scan
+Scanning the main link (`http://203.161.42.223/t/4Dwvmi...`) on URLScan showed the site was unreachable:
 
 ![P02 URLScan Unreachable Error](../Images/P02-IOC-4.png)
 
 * **Result:** `"We could not scan this website!"`
-* **Status:** Site unreachable / No HTTP response.
-* **Assessment:** The attacker utilized short-lived, ephemeral infrastructure that was deactivated shortly after email transmission, or configured access controls to drop traffic from known analysis datacenters.
+* **Assessment:** The attacker likely already took down the server, or they set it up to block automated security scanners from viewing the page.
 
-### VirusTotal IP Reputation
-Querying host IP `203.161.42.223` on VirusTotal returned a clean status across all security vendors:
+### VirusTotal IP Check
+Searching the hosting IP `203.161.42.223` on VirusTotal returned a clean status:
 
 ![P02 VirusTotal Clean Score](../Images/P02-IOC-5.png)
 
 * **Score:** `0 / 92` (No security vendor flagged this IP as malicious)
-* **ASN:** `AS 22612 (Namecheap, Inc.)`
-* **Geo Location:** United States
+* **Hosting Provider:** Namecheap, Inc.
 
-### Analytical Assessment on Zero Detections
-Zero-vendor detection in automated engines does not signify a benign message. The infrastructure exhibits classic hallmarks of **evasive/bulletproof hosting**:
-1. **Bare IP Addressing:** Legitimate commercial services do not route users to raw IPv4 addresses over unencrypted HTTP (`http://203.161.42.223`) for sensitive account administration.
-2. **Short Operational Lifetime:** Phishing actors spin up cheap virtual private servers or proxies (hosted here on Namecheap infrastructure) for bursts of 12–48 hours and abandon them before reputation algorithms can process them.
-3. **Bot/Scanner Filtering:** Modern phishing toolkits routinely filter incoming connections by User-Agent, geo-location, or datacenter IP blocks, dropping connections from automated platforms (like URLScan) while remaining active for targeted victims.
+### Analyst Note on Zero Detections
+A clean score on VirusTotal does not mean the link is safe. This setup is very common for evasive phishing attacks:
+1. **Bare IP Addresses:** Real companies like Netflix use domain names (like netflix.com), not bare IP numbers for their login pages.
+2. **Short Lifespan:** Attackers rent cheap servers and shut them down within a day or two before security companies have time to flag them as malicious.
+3. **Blocking Scanners:** Attackers often block IPs from security tools like URLScan and VirusTotal so their fake pages stay hidden longer.
 
 ---
 
@@ -112,35 +106,35 @@ Zero-vendor detection in automated engines does not signify a benign message. Th
 
 | Tactic | Technique ID | Technique Name | Description |
 | :--- | :--- | :--- | :--- |
-| **Initial Access** | **T1566.002** | Phishing: Spearphishing Link | Employs an email lure containing links to actor-controlled infrastructure to harvest credentials. |
-| **Defense Evasion** | **T1036.005** | Masquerading: Match Legitimate Name | Uses `"Netflix.com"` in the display name to disguise malicious sender identity. |
-| **Defense Evasion** | **T1564.008** | Hide Artifacts: Email Hiding Techniques | Embeds a 1x1 transparent image beacon to stealthily validate victim engagement. |
-| **Resource Development** | **T1584.004** | Compromise Infrastructure: Server | Routes campaign traffic through a compromised educational Microsoft 365 tenant. |
-| **Reconnaissance** | **T1598.003** | Phishing for Information: Spearphishing Link | Deploys tokenized link paths (`/t/...`) to track specific victim click rates. |
+| **Initial Access** | **T1566.002** | Phishing: Spearphishing Link | Sends an email with a malicious link to steal passwords. |
+| **Defense Evasion** | **T1036.005** | Masquerading: Match Legitimate Name | Uses a fake `"Netflix.com"` name to trick the user into trusting the email. |
+| **Defense Evasion** | **T1564.008** | Hide Artifacts: Email Hiding Techniques | Uses a hidden 1x1 image to track the user without them knowing. |
+| **Resource Development** | **T1584.004** | Compromise Infrastructure: Server | Sends the email through a hacked Microsoft 365 school account to look legitimate. |
+| **Reconnaissance** | **T1598.003** | Phishing for Information: Spearphishing Link | Uses unique link paths (`/t/...`) to track exactly who clicked the button. |
 
 ---
 
 ## 7. Indicators of Compromise (IOCs)
 
-| Type | Indicator | Attribution / Role |
+| Type | Indicator | Role in Attack |
 | :--- | :--- | :--- |
-| **IPv4** | `203.161.42.223` | Phishing Host / Credential Harvester (AS22612) |
-| **IPv4** | `104.219.248.205` | Tracking Pixel / Telemetry Web Beacon |
-| **IPv4** | `52.100.172.200` | Microsoft 365 Relay IP (Compromised Tenant Route) |
-| **Domain** | `white1.almonkidsobhanah.shop` | Attacker Sender Domain |
-| **Domain** | `whitepineacademy.onmicrosoft.com` | Hijacked Microsoft 365 Tenant (DKIM Signer) |
-| **URL** | `hxxp://203[.]161[.]42[.]223/t/4Dwvmi...` | Primary Phishing CTA Endpoint |
-| **URL** | `hxxp://104[.]219[.]248[.]205/track/3YEGmL...` | Email Open Telemetry Web Beacon |
+| **IPv4** | `203.161.42.223` | Main Phishing Server (Where the user enters credentials) |
+| **IPv4** | `104.219.248.205` | Tracking Server (Hidden 1x1 pixel) |
+| **IPv4** | `52.100.172.200` | Hacked Microsoft 365 Mail Server IP |
+| **Domain** | `white1.almonkidsobhanah.shop` | Fake Sender Domain |
+| **Domain** | `whitepineacademy.onmicrosoft.com` | Hacked Microsoft 365 Account |
+| **URL** | `hxxp://203[.]161[.]42[.]223/t/4Dwvmi...` | Main "Update Account" Link |
+| **URL** | `hxxp://104[.]219[.]248[.]205/track/3YEGmL...` | Hidden Tracking Link |
 
 ---
 
-## 8. Remediation & SOC Recommendations
+## 8. Remediation & Defenses
 
-### Perimeter & Network Defense
-1. **Network Ingress Blocking:** Add `203.161.42.223` and `104.219.248.205` to perimeter firewall and web proxy blocklists.
-2. **Block Bare IP Navigation:** Enforce enterprise web gateway rules that block direct outbound HTTP/HTTPS connections to raw IP addresses that lack fully qualified domain names (FQDNs).
-3. **External Image Blocking:** Enforce default mail client policies (e.g., Outlook / Exchange) to block automatic downloading of remote images and web beacons from external senders.
+### Network Defenses
+1. **Block IPs:** Add `203.161.42.223` and `104.219.248.205` to the company firewall blocklist.
+2. **Block Bare IPs:** Set up web filters to block users from visiting bare IP addresses directly from their browsers, as normal websites use domains.
 
-### Mail Security & Tenant Hardening
-1. **DKIM Alignment Enforcement:** Configure mail gateway filters to flag or quarantine incoming messages where the DKIM signing domain does not match the header `From:` domain, particularly when originating from generic `.onmicrosoft.com` tenants.
-2. **Tenant Compromise Reporting:** Submit an abuse report to Microsoft Security Operations regarding the compromised educational tenant `whitepineacademy.onmicrosoft.com` to facilitate tenant containment and credential resets.
+### Email Security
+1. **Block Tracking Images:** Set the company email client (like Outlook) to block automatic picture downloads from external senders to stop tracking pixels.
+2. **Check DKIM Alignment:** Set email filters to flag or block emails where the DKIM signature domain does not match the actual sender domain.
+3. **Report the Account:** Report the compromised `whitepineacademy.onmicrosoft.com` account to Microsoft so they can lock it down.
