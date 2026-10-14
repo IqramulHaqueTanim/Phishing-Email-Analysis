@@ -1,4 +1,4 @@
-# Phishing Email Triage & Threat Intelligence Portfolio
+# Phishing Email Analysis
 
 
 ## Project Objective
