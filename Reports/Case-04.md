@@ -51,7 +51,7 @@ To visualize the extortion payload, the artifact was loaded into **PhishTool** f
 ![P04 PhishTool Message Analysis](../Images/P04-IOC-2.png)
 
 ### Social Engineering Indicators
-* **Credential Stuffing:** The attacker explicitly lists the password `"Aurora20!!!"`. 
+* **Credential Stuffing:** The attacker explicitly lists the password `"Aur****20!!!"`. 
 * **Fear Motivation:** Threats of releasing adult content to family and coworkers.
 * **Extortion Demand:** A strict demand for `$400 USD` paid in cryptocurrency.
 * **Cryptocurrency IOC:** Bitcoin Wallet `bc1q5f7aq5svwktsmy5ssvw5e0ju2e0pj5zpeaxsln`.
