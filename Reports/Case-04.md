@@ -92,7 +92,7 @@ A search of the wallet address (`bc1q5f7aq5svwktsmy5ssvw5e0ju2e0pj5zpeaxsln`) on
 | Type | Indicator | Role in Attack |
 | :--- | :--- | :--- |
 | **Cryptocurrency** | `bc1q5f7aq5svwktsmy5ssvw5e0ju2e0pj5zpeaxsln` | Attacker Bitcoin Extortion Wallet |
-| **Credential** | `Aurora20!!!` | Known-compromised password (must be rotated) |
+| **Credential** | `Aur****20!!!` | Known-compromised password (must be rotated) |
 | **IPv4** | `1.1.1.1` | Spoofed Sender IP (Cloudflare) |
 
 ---
